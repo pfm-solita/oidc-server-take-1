@@ -65,6 +65,7 @@ public class SamlController : Controller
     }
 
     [HttpPost("{providerName}/acs")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> AssertionConsumerService(string providerName)
     {
         var provider = await _db.ExternalProviders

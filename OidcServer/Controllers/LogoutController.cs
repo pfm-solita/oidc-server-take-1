@@ -18,6 +18,7 @@ public class LogoutController : Controller
 
     [HttpGet("/connect/logout")]
     [HttpPost("/connect/logout")]
+    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Logout()
     {
         var request = HttpContext.GetOpenIddictServerRequest();
