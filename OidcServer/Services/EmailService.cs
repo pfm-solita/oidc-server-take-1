@@ -19,10 +19,10 @@ public class EmailService : IEmailService
         var emailSettings = _config.GetSection("Email");
         var fromAddress = emailSettings["From"] ?? "noreply@oidcserver.local";
         var smtpHost = emailSettings["SmtpHost"] ?? "localhost";
-        var smtpPort = int.Parse(emailSettings["SmtpPort"] ?? "25");
+        var smtpPort = int.TryParse(emailSettings["SmtpPort"], out var parsedPort) ? parsedPort : 25;
         var smtpUser = emailSettings["SmtpUser"];
         var smtpPass = emailSettings["SmtpPassword"];
-        var useSsl = bool.Parse(emailSettings["UseSsl"] ?? "false");
+        var useSsl = bool.TryParse(emailSettings["UseSsl"], out var parsedSsl) && parsedSsl;
 
         var message = new MimeMessage();
         message.From.Add(MailboxAddress.Parse(fromAddress));

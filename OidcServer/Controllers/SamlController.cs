@@ -50,7 +50,8 @@ public class SamlController : Controller
             config.AllowedAudienceUris.Add(config.Issuer);
 
             var saml2AuthnRequest = new Saml2AuthnRequest(config);
-            HttpContext.Session.SetString($"saml_{providerName}_returnUrl", returnUrl ?? "/");
+            var safeReturnUrl = (returnUrl != null && Url.IsLocalUrl(returnUrl)) ? returnUrl : "/";
+            HttpContext.Session.SetString($"saml_{providerName}_returnUrl", safeReturnUrl);
             HttpContext.Session.SetString($"saml_{providerName}_relayState", saml2AuthnRequest.IdAsString);
 
             var redirectBinding = new Saml2RedirectBinding();
@@ -112,7 +113,8 @@ public class SamlController : Controller
 
             await _signInManager.SignInAsync(user, isPersistent: false);
 
-            var returnUrl = HttpContext.Session.GetString($"saml_{providerName}_returnUrl") ?? "/";
+            var rawReturnUrl = HttpContext.Session.GetString($"saml_{providerName}_returnUrl");
+            var returnUrl = (!string.IsNullOrEmpty(rawReturnUrl) && Url.IsLocalUrl(rawReturnUrl)) ? rawReturnUrl : "/";
             return LocalRedirect(returnUrl);
         }
         catch (Exception ex)

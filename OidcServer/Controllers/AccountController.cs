@@ -101,7 +101,8 @@ public class AccountController : Controller
         await _userManager.UpdateAsync(user);
 
         HttpContext.Session.Remove("2fa_user_id");
-        var returnUrl = HttpContext.Session.GetString("2fa_return_url") ?? "/";
+        var rawReturnUrl = HttpContext.Session.GetString("2fa_return_url");
+        var returnUrl = (!string.IsNullOrEmpty(rawReturnUrl) && Url.IsLocalUrl(rawReturnUrl)) ? rawReturnUrl : "/";
         HttpContext.Session.Remove("2fa_return_url");
 
         await _signInManager.SignInAsync(user, isPersistent: false);

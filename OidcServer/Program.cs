@@ -73,6 +73,9 @@ builder.Services.AddOpenIddict()
         }
         else
         {
+            // TODO: In production, load real X.509 certificates from a secure store
+            // (e.g., Azure Key Vault, certificate file, or OS certificate store).
+            // Example: options.AddEncryptionCertificate(cert).AddSigningCertificate(cert);
             options.AddDevelopmentEncryptionCertificate()
                    .AddDevelopmentSigningCertificate();
         }
