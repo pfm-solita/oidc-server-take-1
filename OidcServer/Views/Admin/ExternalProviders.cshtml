@@ -1,0 +1,85 @@
+@using OidcServer.Models
+@model IEnumerable<ExternalProvider>
+@{
+    ViewData["Title"] = "External Providers";
+    Layout = "_Layout";
+}
+<h1>External Identity Providers</h1>
+<div class="card" style="margin-bottom:16px;">
+    <h2>Add Provider</h2>
+    <form method="post" action="/admin/external-providers/create">
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label>Name (unique identifier, no spaces)</label>
+            <input type="text" name="Name" required placeholder="google-oidc" />
+        </div>
+        <div class="form-group">
+            <label>Display Name</label>
+            <input type="text" name="DisplayName" required placeholder="Google" />
+        </div>
+        <div class="form-group">
+            <label>Type</label>
+            <select name="Type" onchange="toggleFields(this.value)">
+                <option value="oidc">OpenID Connect</option>
+                <option value="saml">SAML 2.0</option>
+            </select>
+        </div>
+        <div id="oidc-fields">
+            <div class="form-group">
+                <label>Authority URL</label>
+                <input type="text" name="Authority" placeholder="https://accounts.google.com" />
+            </div>
+            <div class="form-group">
+                <label>Client ID</label>
+                <input type="text" name="ClientId" />
+            </div>
+            <div class="form-group">
+                <label>Client Secret</label>
+                <input type="text" name="ClientSecret" />
+            </div>
+        </div>
+        <div id="saml-fields" style="display:none;">
+            <div class="form-group">
+                <label>IdP SSO URL (Metadata/Login URL)</label>
+                <input type="text" name="MetadataUrl" placeholder="https://idp.example.com/sso" />
+            </div>
+            <div class="form-group">
+                <label>Entity ID</label>
+                <input type="text" name="EntityId" placeholder="https://idp.example.com" />
+            </div>
+        </div>
+        <button type="submit" class="btn">Add Provider</button>
+    </form>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Display Name</th><th>Type</th><th>Enabled</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.Name</td>
+                    <td>@p.DisplayName</td>
+                    <td>@p.Type.ToUpper()</td>
+                    <td>@(p.Enabled ? "&#10003;" : "&#10007;")</td>
+                    <td>
+                        <form method="post" action="/admin/external-providers/delete" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Delete?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+function toggleFields(type) {
+    document.getElementById('oidc-fields').style.display = type === 'oidc' ? 'block' : 'none';
+    document.getElementById('saml-fields').style.display = type === 'saml' ? 'block' : 'none';
+}
+</script>
+<a href="/admin">&#8592; Back to Dashboard</a>

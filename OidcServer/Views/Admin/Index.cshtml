@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_Layout";
+}
+<h1>Admin Dashboard</h1>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px;">
+    <a href="/admin/clients" class="card" style="text-decoration:none;color:inherit;">
+        <h3>&#128273; Clients</h3>
+        <p>Manage OAuth 2.1 client applications</p>
+    </a>
+    <a href="/admin/scopes" class="card" style="text-decoration:none;color:inherit;">
+        <h3>&#128274; Scopes</h3>
+        <p>Manage OAuth scopes and resources</p>
+    </a>
+    <a href="/admin/external-providers" class="card" style="text-decoration:none;color:inherit;">
+        <h3>&#128279; External Providers</h3>
+        <p>Configure OIDC and SAML 2.0 identity providers</p>
+    </a>
+    <a href="/admin/users" class="card" style="text-decoration:none;color:inherit;">
+        <h3>&#128101; Users</h3>
+        <p>Manage user accounts</p>
+    </a>
+</div>

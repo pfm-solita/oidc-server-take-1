@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+<div class="card">
+    <h1>Sign In</h1>
+    <partial name="_ValidationSummary" />
+    <form method="post" action="/account/login">
+        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required autofocus />
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+        </div>
+        <button type="submit" class="btn">Sign In</button>
+        <a href="/account/register" style="margin-left:16px;">Create account</a>
+    </form>
+</div>

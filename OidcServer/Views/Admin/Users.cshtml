@@ -1,0 +1,32 @@
+@using OidcServer.Models
+@model IEnumerable<ApplicationUser>
+@{
+    ViewData["Title"] = "Manage Users";
+    Layout = "_Layout";
+}
+<h1>Users</h1>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Email</th><th>Display Name</th><th>Email Verified</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.DisplayName</td>
+                    <td>@(user.EmailVerified ? "&#10003;" : "&#10007;")</td>
+                    <td>
+                        <form method="post" action="/admin/users/toggle-admin" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn btn-secondary">Toggle Admin</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<a href="/admin">&#8592; Back to Dashboard</a>

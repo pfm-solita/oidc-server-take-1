@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="OidcServer.Tests/OidcServer.Tests.csproj" />
+  <Project Path="OidcServer/OidcServer.csproj" />
+</Solution>

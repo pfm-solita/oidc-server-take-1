@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Email Verification";
+    Layout = "_Layout";
+}
+<div class="card">
+    <h1>Email Verification</h1>
+    @if (ViewData["Success"] != null)
+    {
+        <div class="alert alert-success">Your email has been verified successfully. You can now log in.</div>
+        <a href="/account/login" class="btn">Go to Login</a>
+    }
+    else
+    {
+        <div class="alert alert-error">@ViewData["Error"]</div>
+    }
+</div>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - OIDC Server</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+        .navbar { background: #1a1a2e; color: white; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .navbar a { color: white; text-decoration: none; margin-left: 16px; }
+        .navbar a:hover { text-decoration: underline; }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 24px; }
+        .card { background: white; border-radius: 8px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1, h2, h3 { margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 4px; font-weight: 500; }
+        input[type=text], input[type=email], input[type=password], select, textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #4361ee; box-shadow: 0 0 0 3px rgba(67,97,238,0.15); }
+        .btn { display: inline-block; padding: 10px 20px; background: #4361ee; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; text-decoration: none; }
+        .btn:hover { background: #3a52d4; }
+        .btn-danger { background: #e63946; }
+        .btn-danger:hover { background: #c1121f; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .alert { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; }
+        .alert-error { background: #fee; border: 1px solid #fcc; color: #c00; }
+        .alert-success { background: #efe; border: 1px solid #cfc; color: #060; }
+        .alert-info { background: #eef; border: 1px solid #ccf; color: #006; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        tr:hover td { background: #f8f9fa; }
+        .nav-tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+        .nav-tab { padding: 8px 16px; background: #e9ecef; border-radius: 4px 4px 0 0; text-decoration: none; color: #495057; }
+        .nav-tab.active { background: white; color: #4361ee; border-bottom: 2px solid #4361ee; }
+        a { color: #4361ee; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div><strong>OIDC Server</strong></div>
+        <div>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <span>@User.Identity.Name</span>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="/admin">Admin</a>
+                }
+                <a href="/account/logout">Logout</a>
+            }
+            else
+            {
+                <a href="/account/login">Login</a>
+                <a href="/account/register">Register</a>
+            }
+        </div>
+    </nav>
+    <div class="container">
+        @RenderBody()
+    </div>
+</body>
+</html>
