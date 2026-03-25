@@ -1,4 +1,5 @@
 using OpenIddict.Abstractions;
+using Microsoft.Extensions.Configuration;
 
 namespace OidcServer.Services;
 
@@ -15,13 +16,15 @@ public class WorkerService : IHostedService
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         var manager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
         if (await manager.FindByClientIdAsync("admin-cli", cancellationToken) is null)
         {
+            var clientSecret = config["AdminCli:ClientSecret"] ?? "admin-cli-secret";
             await manager.CreateAsync(new OpenIddictApplicationDescriptor
             {
                 ClientId = "admin-cli",
-                ClientSecret = "admin-cli-secret",
+                ClientSecret = clientSecret,
                 DisplayName = "Admin CLI Client",
                 Permissions =
                 {

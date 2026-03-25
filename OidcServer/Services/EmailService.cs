@@ -47,7 +47,8 @@ public class EmailService : IEmailService
 
     public async Task SendVerificationEmailAsync(string to, string verificationLink, CancellationToken cancellationToken = default)
     {
-        var body = $"<p>Please verify your email address by clicking <a href='{verificationLink}'>here</a>.</p><p>Or copy this link: {verificationLink}</p>";
+        var encodedLink = System.Net.WebUtility.HtmlEncode(verificationLink);
+        var body = $"<p>Please verify your email address by clicking <a href='{encodedLink}'>here</a>.</p><p>Or copy this link: {encodedLink}</p>";
         await SendEmailAsync(to, "Verify your email address", body, cancellationToken);
     }
 

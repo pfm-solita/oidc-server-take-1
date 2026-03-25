@@ -57,7 +57,7 @@ public class AccountController : Controller
             return View();
         }
 
-        var code = new Random().Next(100000, 999999).ToString();
+        var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         user.TwoFactorCode = code;
         user.TwoFactorCodeExpiry = DateTime.UtcNow.AddMinutes(10);
         await _userManager.UpdateAsync(user);
