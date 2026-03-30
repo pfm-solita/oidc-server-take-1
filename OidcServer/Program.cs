@@ -138,24 +138,32 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    if (!await roleManager.RoleExistsAsync("Admin"))
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-
-    var adminEmail = builder.Configuration["AdminUser:Email"] ?? "admin@oidcserver.local";
-    var adminPassword = builder.Configuration["AdminUser:Password"] ?? "Admin123!";
-
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    try
     {
-        var adminUser = new ApplicationUser
+        if (!await roleManager.RoleExistsAsync("Admin"))
+            await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+        var adminEmail = builder.Configuration["AdminUser:Email"] ?? "admin@oidcserver.local";
+        var adminPassword = builder.Configuration["AdminUser:Password"] ?? "Admin123!";
+
+        if (await userManager.FindByEmailAsync(adminEmail) == null)
         {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailVerified = true,
-            DisplayName = "Administrator"
-        };
-        var result = await userManager.CreateAsync(adminUser, adminPassword);
-        if (result.Succeeded)
-            await userManager.AddToRoleAsync(adminUser, "Admin");
+            var adminUser = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailVerified = true,
+                DisplayName = "Administrator"
+            };
+            var result = await userManager.CreateAsync(adminUser, adminPassword);
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+    }
+    catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+    {
+        // Ignore constraint violations that can occur when multiple hosts start concurrently
+        // against the same database (e.g., during integration test dual-host setup).
     }
 }
 
@@ -164,7 +172,8 @@ if (app.Environment.IsDevelopment())
 else
     app.UseExceptionHandler("/error");
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Testing"))
+    app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
