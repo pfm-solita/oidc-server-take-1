@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OidcServer.Data;
 using OidcServer.Models;
 using OidcServer.Services;
 
@@ -11,23 +13,27 @@ public class AccountController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IEmailService _emailService;
     private readonly ILogger<AccountController> _logger;
+    private readonly ApplicationDbContext _db;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IEmailService emailService,
-        ILogger<AccountController> logger)
+        ILogger<AccountController> logger,
+        ApplicationDbContext db)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
         _logger = logger;
+        _db = db;
     }
 
     [HttpGet("/account/login")]
-    public IActionResult Login(string? returnUrl = null)
+    public async Task<IActionResult> Login(string? returnUrl = null)
     {
         ViewData["ReturnUrl"] = returnUrl;
+        await PopulateExternalProvidersAsync();
         return View();
     }
 
@@ -41,12 +47,14 @@ public class AccountController : Controller
         if (user == null)
         {
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            await PopulateExternalProvidersAsync();
             return View();
         }
 
         if (!user.EmailVerified)
         {
             ModelState.AddModelError(string.Empty, "Please verify your email before logging in.");
+            await PopulateExternalProvidersAsync();
             return View();
         }
 
@@ -54,6 +62,7 @@ public class AccountController : Controller
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            await PopulateExternalProvidersAsync();
             return View();
         }
 
@@ -204,6 +213,7 @@ public class AccountController : Controller
         if (string.IsNullOrEmpty(email))
         {
             ViewData["Error"] = "Could not retrieve email from external provider.";
+            await PopulateExternalProvidersAsync();
             return View("Login");
         }
 
@@ -223,5 +233,13 @@ public class AccountController : Controller
         await _userManager.AddLoginAsync(user, info);
         await _signInManager.SignInAsync(user, isPersistent: false);
         return LocalRedirect(returnUrl ?? "/");
+    }
+
+    private async Task PopulateExternalProvidersAsync()
+    {
+        ViewData["ExternalProviders"] = await _db.ExternalProviders
+            .Where(p => p.Enabled)
+            .OrderBy(p => p.DisplayName)
+            .ToListAsync();
     }
 }

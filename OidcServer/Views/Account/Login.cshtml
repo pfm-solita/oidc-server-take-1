@@ -1,6 +1,8 @@
+@using OidcServer.Models
 @{
     ViewData["Title"] = "Login";
     Layout = "_Layout";
+    var externalProviders = ViewData["ExternalProviders"] as IEnumerable<ExternalProvider> ?? Enumerable.Empty<ExternalProvider>();
 }
 <div class="card">
     <h1>Sign In</h1>
@@ -19,4 +21,16 @@
         <button type="submit" class="btn">Sign In</button>
         <a href="/account/register" style="margin-left:16px;">Create account</a>
     </form>
+    @if (externalProviders.Any())
+    {
+        <hr style="margin:24px 0;" />
+        <p style="margin-bottom:12px;color:#666;">Or sign in with:</p>
+        @foreach (var provider in externalProviders)
+        {
+            <a href="/account/external-login?provider=@Uri.EscapeDataString(provider.Name)&returnUrl=@Uri.EscapeDataString((string?)ViewData["ReturnUrl"] ?? string.Empty)"
+               class="btn btn-secondary" style="margin-right:8px;margin-bottom:8px;">
+                @provider.DisplayName
+            </a>
+        }
+    }
 </div>
