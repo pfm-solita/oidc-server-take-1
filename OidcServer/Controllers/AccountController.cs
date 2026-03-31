@@ -14,19 +14,22 @@ public class AccountController : Controller
     private readonly IEmailService _emailService;
     private readonly ILogger<AccountController> _logger;
     private readonly ApplicationDbContext _db;
+    private readonly IConfiguration _configuration;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IEmailService emailService,
         ILogger<AccountController> logger,
-        ApplicationDbContext db)
+        ApplicationDbContext db,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
         _logger = logger;
         _db = db;
+        _configuration = configuration;
     }
 
     [HttpGet("/account/login")]
@@ -64,6 +67,13 @@ public class AccountController : Controller
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             await PopulateExternalProvidersAsync();
             return View();
+        }
+
+        if (!_configuration.GetValue<bool>("Auth:TwoFactorEnabled", false))
+        {
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            var safeUrl = (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) ? returnUrl : "/";
+            return LocalRedirect(safeUrl);
         }
 
         var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
