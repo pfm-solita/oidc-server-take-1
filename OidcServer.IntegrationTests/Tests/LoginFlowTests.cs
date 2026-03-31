@@ -3,7 +3,7 @@ using OidcServer.IntegrationTests.Infrastructure;
 
 namespace OidcServer.IntegrationTests.Tests;
 
-[Collection("Integration")]
+[Collection(IntegrationTestCollection.Name)]
 public class LoginFlowTests : IntegrationTestBase
 {
     private const string AdminEmail = "admin@oidcserver.local";

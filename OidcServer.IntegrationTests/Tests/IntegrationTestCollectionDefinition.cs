@@ -1,7 +1,7 @@
 namespace OidcServer.IntegrationTests.Tests;
 
-[CollectionDefinition("Integration")]
+[CollectionDefinition(IntegrationTestCollection.Name)]
 public class IntegrationTestCollection : ICollectionFixture<OidcServer.IntegrationTests.Infrastructure.PlaywrightFixture>
 {
-    // This class has no code; it serves as the xUnit collection definition.
+    public const string Name = "Integration";
 }

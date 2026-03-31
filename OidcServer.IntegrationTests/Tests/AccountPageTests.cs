@@ -3,7 +3,7 @@ using OidcServer.IntegrationTests.Infrastructure;
 
 namespace OidcServer.IntegrationTests.Tests;
 
-[Collection("Integration")]
+[Collection(IntegrationTestCollection.Name)]
 public class AccountPageTests : IntegrationTestBase
 {
     public AccountPageTests(PlaywrightFixture fixture) : base(fixture) { }

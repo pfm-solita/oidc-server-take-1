@@ -4,7 +4,7 @@ using OidcServer.IntegrationTests.Infrastructure;
 
 namespace OidcServer.IntegrationTests.Tests;
 
-[Collection("Integration")]
+[Collection(IntegrationTestCollection.Name)]
 public class OidcEndpointTests : IntegrationTestBase
 {
     private readonly HttpClient _httpClient;
