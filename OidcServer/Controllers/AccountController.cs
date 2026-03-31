@@ -217,7 +217,10 @@ public class AccountController : Controller
 
         var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
         if (result.Succeeded)
-            return LocalRedirect(returnUrl ?? "/");
+        {
+            var safeUrl = (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) ? returnUrl : "/";
+            return LocalRedirect(safeUrl);
+        }
 
         var email = info.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
         if (string.IsNullOrEmpty(email))
@@ -242,7 +245,8 @@ public class AccountController : Controller
 
         await _userManager.AddLoginAsync(user, info);
         await _signInManager.SignInAsync(user, isPersistent: false);
-        return LocalRedirect(returnUrl ?? "/");
+        var safeReturnUrl = (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) ? returnUrl : "/";
+        return LocalRedirect(safeReturnUrl);
     }
 
     private async Task PopulateExternalProvidersAsync()
