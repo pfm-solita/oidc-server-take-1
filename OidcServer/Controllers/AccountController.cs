@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ public class AccountController : Controller
     private readonly ILogger<AccountController> _logger;
     private readonly ApplicationDbContext _db;
     private readonly IConfiguration _configuration;
+    private readonly IAuthenticationSchemeProvider _schemeProvider;
 
     public AccountController(
         UserManager<ApplicationUser> userManager,
@@ -22,7 +25,8 @@ public class AccountController : Controller
         IEmailService emailService,
         ILogger<AccountController> logger,
         ApplicationDbContext db,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IAuthenticationSchemeProvider schemeProvider)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -30,6 +34,7 @@ public class AccountController : Controller
         _logger = logger;
         _db = db;
         _configuration = configuration;
+        _schemeProvider = schemeProvider;
     }
 
     [HttpGet("/account/login")]
@@ -201,11 +206,38 @@ public class AccountController : Controller
     }
 
     [HttpGet("/account/external-login")]
-    public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+    public async Task<IActionResult> ExternalLogin(string provider, string? returnUrl = null)
     {
+        // Dynamically register the OIDC scheme if it is not yet known to ASP.NET Core.
+        // This covers providers that were added via the admin UI after the app started.
+        await EnsureOidcSchemeRegisteredAsync(provider);
+
         var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
         var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
         return Challenge(properties, provider);
+    }
+
+    /// <summary>
+    /// Registers a named <see cref="OpenIdConnectHandler"/> scheme on the fly when it
+    /// has not been registered yet (e.g. a provider created through the admin UI after
+    /// application startup).  The scheme's actual options (Authority, ClientId, …) are
+    /// resolved lazily by <see cref="DynamicOidcConfigureOptions"/> from the database.
+    /// </summary>
+    private async Task EnsureOidcSchemeRegisteredAsync(string schemeName)
+    {
+        if (await _schemeProvider.GetSchemeAsync(schemeName) is not null)
+            return;
+
+        var providerConfig = await _db.ExternalProviders
+            .FirstOrDefaultAsync(p => p.Name == schemeName && p.Type == "oidc" && p.Enabled);
+
+        if (providerConfig is null)
+            return;
+
+        _schemeProvider.AddScheme(new AuthenticationScheme(
+            schemeName,
+            providerConfig.DisplayName,
+            typeof(OpenIdConnectHandler)));
     }
 
     [HttpGet("/account/external-login-callback")]

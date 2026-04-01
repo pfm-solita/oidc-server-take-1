@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.EntityFrameworkCore;
 using OpenIddict.Abstractions;
 using Microsoft.Extensions.Configuration;
+using OidcServer.Data;
 
 namespace OidcServer.Services;
 
@@ -33,6 +37,27 @@ public class WorkerService : IHostedService
                     OpenIddictConstants.Permissions.Prefixes.Scope + "openid",
                 }
             }, cancellationToken);
+        }
+
+        // Pre-register OpenIdConnect schemes for any OIDC external providers that are
+        // already in the database.  This means a provider configured before the app
+        // starts is immediately available without waiting for the first login request.
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var schemeProvider = scope.ServiceProvider.GetRequiredService<IAuthenticationSchemeProvider>();
+
+        var oidcProviders = await db.ExternalProviders
+            .Where(p => p.Type == "oidc" && p.Enabled)
+            .ToListAsync(cancellationToken);
+
+        foreach (var provider in oidcProviders)
+        {
+            if (await schemeProvider.GetSchemeAsync(provider.Name) is null)
+            {
+                schemeProvider.AddScheme(new AuthenticationScheme(
+                    provider.Name,
+                    provider.DisplayName,
+                    typeof(OpenIdConnectHandler)));
+            }
         }
     }
 

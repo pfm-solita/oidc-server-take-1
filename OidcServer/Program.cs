@@ -1,7 +1,9 @@
 using ITfoxtec.Identity.Saml2;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OidcServer.Data;
 using OidcServer.Models;
 using OidcServer.Services;
@@ -115,17 +117,16 @@ builder.Services.AddHostedService<WorkerService>();
 // MVC + Razor Views
 builder.Services.AddControllersWithViews();
 
-// Authentication providers
+// Authentication providers.
+// The static AddOpenIdConnect call registers the OpenIdConnectHandler and its
+// required post-configure infrastructure.  Real per-provider configuration
+// (Authority, ClientId, ClientSecret, …) is applied at request time by
+// DynamicOidcConfigureOptions, which reads from the ExternalProviders DB table.
 builder.Services.AddAuthentication()
-    .AddOpenIdConnect("oidc-external", "External OIDC", options =>
-    {
-        options.Authority = "https://placeholder.example.com";
-        options.ClientId = "placeholder";
-        options.ClientSecret = "placeholder";
-        options.ResponseType = "code";
-        options.SaveTokens = true;
-        options.CallbackPath = "/signin-oidc-external";
-    });
+    .AddOpenIdConnect("oidc-external", "External OIDC", _ => { });
+
+// Reads OIDC provider settings from the DB for any named scheme.
+builder.Services.AddSingleton<IConfigureNamedOptions<OpenIdConnectOptions>, DynamicOidcConfigureOptions>();
 
 var app = builder.Build();
 

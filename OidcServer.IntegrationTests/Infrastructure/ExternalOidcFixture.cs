@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,20 +52,9 @@ public sealed class ExternalOidcRpFactory : IntegrationWebApplicationFactory
                 ["Auth:TwoFactorEnabled"] = "false",
             }));
 
-        builder.ConfigureServices(services =>
-            services.PostConfigure<OpenIdConnectOptions>("oidc-external", opts =>
-            {
-                opts.Authority = IdpBaseUrl;
-                opts.ClientId = ExternalOidcFixture.RpClientId;
-                opts.ClientSecret = ExternalOidcFixture.RpClientSecret;
-                opts.RequireHttpsMetadata = false;
-                opts.GetClaimsFromUserInfoEndpoint = true;
-                opts.MapInboundClaims = true;
-                if (!opts.Scope.Contains("email"))
-                    opts.Scope.Add("email");
-                if (!opts.Scope.Contains("profile"))
-                    opts.Scope.Add("profile");
-            }));
+        // OIDC scheme options (Authority, ClientId, ClientSecret, RequireHttpsMetadata, …)
+        // are read from the ExternalProviders database table by DynamicOidcConfigureOptions,
+        // which is registered in Program.cs.  No per-test PostConfigure is needed.
     }
 }
 
@@ -143,6 +131,7 @@ public sealed class ExternalOidcFixture : IAsyncLifetime
             Type = "oidc",
             Authority = IdpBaseUrl,
             ClientId = RpClientId,
+            ClientSecret = RpClientSecret,
             Enabled = true,
         });
         await db.SaveChangesAsync();
