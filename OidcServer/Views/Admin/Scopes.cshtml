@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Manage Scopes";
+    Layout = "_Layout";
+    var scopes = ViewData["Scopes"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+}
+<h1>OAuth Scopes</h1>
+<div class="card" style="margin-bottom:16px;">
+    <h2>Add Scope</h2>
+    <form method="post" action="/admin/scopes/create">
+        @Html.AntiForgeryToken()
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" name="name" placeholder="scope-name" required style="flex:1;" />
+            <input type="text" name="displayName" placeholder="Display Name" style="flex:1;" />
+            <input type="text" name="resources" placeholder="resource1 resource2" style="flex:1;" />
+            <button type="submit" class="btn">Add</button>
+        </div>
+    </form>
+</div>
+<div class="card">
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Display Name</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var scope in scopes)
+            {
+                <tr>
+                    <td>@scope.Name</td>
+                    <td>@scope.DisplayName</td>
+                    <td>
+                        <form method="post" action="/admin/scopes/delete" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="name" value="@scope.Name" />
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this scope?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<a href="/admin">&#8592; Back to Dashboard</a>
