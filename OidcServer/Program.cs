@@ -119,11 +119,21 @@ builder.Services.AddControllersWithViews();
 
 // Authentication providers.
 // The static AddOpenIdConnect call registers the OpenIdConnectHandler and its
-// required post-configure infrastructure.  Real per-provider configuration
-// (Authority, ClientId, ClientSecret, …) is applied at request time by
-// DynamicOidcConfigureOptions, which reads from the ExternalProviders DB table.
+// required post-configure infrastructure, and provides placeholder values that
+// satisfy startup validation (OpenIdConnectOptions.Validate requires ClientId to
+// be non-null).  Real per-provider configuration (Authority, ClientId, ClientSecret, …)
+// is applied at request time by DynamicOidcConfigureOptions, which reads from the
+// ExternalProviders DB table and overrides these placeholders.
 builder.Services.AddAuthentication()
-    .AddOpenIdConnect("oidc-external", "External OIDC", _ => { });
+    .AddOpenIdConnect("oidc-external", "External OIDC", options =>
+    {
+        options.Authority = "https://placeholder.example.com";
+        options.ClientId = "placeholder";
+        options.ClientSecret = "placeholder";
+        options.ResponseType = "code";
+        options.SaveTokens = true;
+        options.CallbackPath = "/signin-oidc-external";
+    });
 
 // Reads OIDC provider settings from the DB for any named scheme.
 builder.Services.AddSingleton<IConfigureNamedOptions<OpenIdConnectOptions>, DynamicOidcConfigureOptions>();
